@@ -1,7 +1,14 @@
 package br.hikarikun92.restdemo.person;
 
+import br.hikarikun92.restdemo.exception.DataException;
 import org.springframework.stereotype.Repository;
 
+import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -9,27 +16,53 @@ import java.util.Optional;
 //example, retrieve data from a database, from memory, from a file etc.
 @Repository
 public class PersonRepository {
-    //Use a local field as an in-memory data storage
-    private final List<Person> existingPeople = List.of(
-            new Person("Lucas", 27),
-            new Person("Fulano", 30),
-            new Person("Siclano", 22)
-    );
+    private final DataSource dataSource;
+
+    public PersonRepository(DataSource dataSource) {
+        this.dataSource = dataSource;
+    }
 
     //Retrieve all the people present in this system
     public List<Person> getAll() {
-        return existingPeople;
+        try (Connection connection = dataSource.getConnection()) {
+            final ResultSet resultSet = connection.createStatement().executeQuery("select id, name, age from person");
+
+            List<Person> people = new ArrayList<>();
+            while (resultSet.next()) {
+                final int id = resultSet.getInt("id");
+                final String name = resultSet.getString("name");
+                final int age = resultSet.getInt("age");
+
+                Person person = new Person(id, name, age);
+                people.add(person);
+            }
+
+            return people;
+        } catch (SQLException e) {
+            throw new DataException("Error retrieving people list", e);
+        }
     }
 
     //Retrieve a person by its name, or none if no such name exists. This method returns an Optional, indicating the person
     //might or not be found in the system.
     public Optional<Person> getByName(String name) {
-        for (Person person : existingPeople) {
-            if (person.getName().equals(name)) {
-                return Optional.of(person);
-            }
-        }
+        try (Connection connection = dataSource.getConnection()) {
+            //We will use a PreparedStatement both for optimization and because it can sanitize user input, avoiding, for example, SQL injection
+            final PreparedStatement preparedStatement = connection.prepareStatement("select id, age from person where name = ?");
+            preparedStatement.setString(1, name);
 
-        return Optional.empty();
+            final ResultSet resultSet = preparedStatement.executeQuery();
+            if (resultSet.next()) {
+                final int id = resultSet.getInt("id");
+                final int age = resultSet.getInt("age");
+
+                Person person = new Person(id, name, age);
+                return Optional.of(person);
+            } else {
+                return Optional.empty();
+            }
+        } catch (SQLException e) {
+            throw new DataException("Error searching for person " + name, e);
+        }
     }
 }
