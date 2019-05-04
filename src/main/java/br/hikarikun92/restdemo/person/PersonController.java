@@ -21,12 +21,12 @@ public class PersonController {
     @GetMapping(produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public List<Person> getAll() {
         //Retrieve all the people present in the application, converted to a JSON list
-        return repository.getAll();
+        return repository.findAll();
     }
 
-    @GetMapping(value = "{name}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity<Person> getByName(@PathVariable String name) {
-        Optional<Person> optional = repository.getByName(name);
+    @GetMapping(value = "{id}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public ResponseEntity<Person> getById(@PathVariable int id) {
+        Optional<Person> optional = repository.findById(id);
 
         if (optional.isPresent()) {
             //If there was a person with that name, return a response code of 200 (OK) and the person data converted to JSON
@@ -35,5 +35,15 @@ public class PersonController {
             //Otherwise, return a status code of 404 (Not Found)
             return ResponseEntity.notFound().build();
         }
+    }
+
+    @GetMapping(value = "/name/{name}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public List<Person> searchByName(@PathVariable String name) {
+        return repository.findAllByNameContaining(name);
+    }
+
+    @GetMapping(value = "/custom", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public List<Person> customSearch(@RequestParam String name, @RequestParam int age) {
+        return repository.findUsingMyCustomRule(name, age);
     }
 }

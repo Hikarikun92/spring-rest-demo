@@ -1,8 +1,18 @@
 package br.hikarikun92.restdemo.person;
 
+import javax.persistence.*;
+
+@Entity
+@Table(name = "person")
 public class Person {
-    private int id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
+
+    @Column(nullable = false)
     private String name;
+
+    @Column(nullable = false)
     private int age;
 
     public Person() {
@@ -14,11 +24,11 @@ public class Person {
         this.age = age;
     }
 
-    public int getId() {
+    public Integer getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
