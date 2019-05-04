@@ -1,34 +1,24 @@
-package br.hikarikun92.restdemo.person;
+package br.hikarikun92.restdemo.person.rest.dto;
 
-import javax.persistence.*;
-
-@Entity
-@Table(name = "person")
-public class Person {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
-
-    @Column(nullable = false)
+public class PersonReadDto {
+    private int id;
     private String name;
-
-    @Column(nullable = false)
     private int age;
 
-    public Person() {
+    public PersonReadDto() {
     }
 
-    public Person(Integer id, String name, int age) {
+    public PersonReadDto(int id, String name, int age) {
         this.id = id;
         this.name = name;
         this.age = age;
     }
 
-    public Integer getId() {
+    public int getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(int id) {
         this.id = id;
     }
 
