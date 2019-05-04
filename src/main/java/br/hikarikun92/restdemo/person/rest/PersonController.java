@@ -6,6 +6,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.net.URI;
 import java.util.List;
 import java.util.Optional;
@@ -50,13 +51,13 @@ public class PersonController {
     }
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity<Void> create(@RequestBody PersonWriteDto dto) {
+    public ResponseEntity<Void> create(@RequestBody @Valid PersonWriteDto dto) {
         final int id = facade.create(dto);
         return ResponseEntity.created(URI.create("/" + id)).build();
     }
 
     @PutMapping(value = "{id}", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity<Void> update(@PathVariable int id, @RequestBody PersonWriteDto dto) {
+    public ResponseEntity<Void> update(@PathVariable int id, @RequestBody @Valid PersonWriteDto dto) {
         final boolean found = facade.update(id, dto);
         if (found) {
             //If the person was found and updated, return "No Content"
