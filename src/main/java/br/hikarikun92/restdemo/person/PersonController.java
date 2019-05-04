@@ -1,5 +1,6 @@
 package br.hikarikun92.restdemo.person;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -55,5 +56,26 @@ public class PersonController {
 
         final Person savedPerson = repository.save(person);
         return ResponseEntity.created(URI.create("/" + savedPerson.getId())).build();
+    }
+
+    //As we will not return anything, a status of "No Content" is appropriate
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PutMapping(value = "{id}", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public void update(@PathVariable int id, @RequestBody Person person) {
+        //Set the ID manually to avoid a possibly wrong payload
+        person.setId(id);
+
+        //Observe that, when saving the person like this, it will update an existing entity correctly, but if the person
+        //with the requested ID does not exist, it will be created with even another ID. How to fix that?
+        repository.save(person);
+    }
+
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @DeleteMapping(value = "{id}")
+    public void delete(@PathVariable int id) {
+        //This method will delete the person if it exists and ignore it if it doesn't. Maybe it would be good to return
+        //HTTP 404 if it doesn't exist, but that is up to you
+        final Optional<Person> optional = repository.findById(id);
+        optional.ifPresent(repository::delete);
     }
 }
