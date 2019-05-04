@@ -4,6 +4,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
 import java.util.List;
 import java.util.Optional;
 
@@ -45,5 +46,14 @@ public class PersonController {
     @GetMapping(value = "/custom", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public List<Person> customSearch(@RequestParam String name, @RequestParam int age) {
         return repository.findUsingMyCustomRule(name, age);
+    }
+
+    @PostMapping(consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public ResponseEntity<Void> create(@RequestBody Person person) {
+        //If the ID is set, an existing entity in the database will be updated instead, which is incorrect
+        person.setId(null);
+
+        final Person savedPerson = repository.save(person);
+        return ResponseEntity.created(URI.create("/" + savedPerson.getId())).build();
     }
 }
